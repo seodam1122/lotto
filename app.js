@@ -3,6 +3,8 @@ const PICK_COUNT = 6;
 const MAX_HISTORY = 5;
 const STORAGE_KEY = "ai-lotto-history";
 const DRAW_BUTTON_TEXT = "번호 추첨";
+const AUTO_RESET_DELAY = 900;
+const FULL_HISTORY_MESSAGE = "최근 기록을 비운 후에 다시 시도해주세요.";
 
 const numberBoard = document.querySelector("#numberBoard");
 const drawButton = document.querySelector("#drawButton");
@@ -15,6 +17,7 @@ const state = {
   currentNumbers: [],
   revealedCount: 0,
   history: loadHistory(),
+  resetTimer: null,
 };
 
 function loadHistory() {
@@ -28,6 +31,10 @@ function loadHistory() {
 
 function saveHistory() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state.history));
+}
+
+function isHistoryFull() {
+  return state.history.length >= MAX_HISTORY;
 }
 
 function getRangeClass(number) {
@@ -56,17 +63,31 @@ function randomInt(min, max) {
 }
 
 function startNewGame() {
+  clearAutoReset();
   state.currentNumbers = drawRandomNumbers();
   state.revealedCount = 0;
   drawButton.textContent = DRAW_BUTTON_TEXT;
+  setGameControlsDisabled(false);
   updateStatus();
   renderBoard();
 }
 
 function revealNextNumber() {
   if (!state.currentNumbers.length) {
+    if (isHistoryFull()) {
+      alert(FULL_HISTORY_MESSAGE);
+      statusText.textContent = "기록을 비워주세요";
+      return;
+    }
+
     startNewGame();
   } else if (state.revealedCount === PICK_COUNT) {
+    if (isHistoryFull()) {
+      alert(FULL_HISTORY_MESSAGE);
+      statusText.textContent = "기록을 비워주세요";
+      return;
+    }
+
     startNewGame();
   }
 
@@ -77,19 +98,46 @@ function revealNextNumber() {
   if (state.revealedCount === PICK_COUNT) {
     addToHistory(state.currentNumbers);
     drawButton.textContent = DRAW_BUTTON_TEXT;
+    scheduleAutoReset();
   }
 }
 
 function resetCurrentGame() {
+  clearAutoReset();
   state.currentNumbers = [];
   state.revealedCount = 0;
   drawButton.textContent = DRAW_BUTTON_TEXT;
+  setGameControlsDisabled(false);
   updateStatus();
   renderBoard();
 }
 
+function scheduleAutoReset() {
+  setGameControlsDisabled(true);
+  state.resetTimer = window.setTimeout(resetCurrentGame, AUTO_RESET_DELAY);
+}
+
+function clearAutoReset() {
+  if (!state.resetTimer) {
+    return;
+  }
+
+  window.clearTimeout(state.resetTimer);
+  state.resetTimer = null;
+}
+
+function setGameControlsDisabled(isDisabled) {
+  drawButton.disabled = isDisabled;
+  resetButton.disabled = isDisabled;
+}
+
 function updateStatus() {
   if (!state.currentNumbers.length) {
+    if (isHistoryFull()) {
+      statusText.textContent = "기록 가득 참";
+      return;
+    }
+
     statusText.textContent = "새 게임 대기";
     return;
   }
@@ -103,7 +151,7 @@ function updateStatus() {
 }
 
 function addToHistory(numbers) {
-  if (state.history.length >= MAX_HISTORY) {
+  if (isHistoryFull()) {
     return;
   }
 
@@ -124,6 +172,7 @@ function clearHistory() {
   state.history = [];
   saveHistory();
   renderHistory();
+  updateStatus();
 }
 
 function renderBoard() {
