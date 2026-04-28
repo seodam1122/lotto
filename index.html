@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Lotto Picker</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="lotto-card" aria-labelledby="current-game-title">
+        <div class="card-head">
+          <div>
+            <p class="section-label">Current Pick</p>
+            <h2 id="current-game-title">진행 중인 게임</h2>
+          </div>
+          <span class="status-pill" id="statusText">새 게임 대기</span>
+        </div>
+
+        <div class="numbers" id="numberBoard" aria-live="polite"></div>
+
+        <div class="actions">
+          <button class="button primary" type="button" id="drawButton">
+            번호 추첨
+          </button>
+          <button class="button ghost" type="button" id="resetButton">
+            현재 게임 초기화
+          </button>
+        </div>
+      </section>
+
+      <section class="history-card" aria-labelledby="history-title">
+        <div class="card-head">
+          <div>
+            <p class="section-label">Saved Games</p>
+            <h2 id="history-title">최근 기록</h2>
+          </div>
+          <button class="text-button" type="button" id="clearHistoryButton">
+            기록 비우기
+          </button>
+        </div>
+        <ol class="history-list" id="historyList"></ol>
+      </section>
+    </main>
+
+    <script src="./app.js" defer></script>
+  </body>
+</html>
