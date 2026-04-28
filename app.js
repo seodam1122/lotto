@@ -38,36 +38,15 @@ function getRangeClass(number) {
   return "range-40";
 }
 
-function weightedNumberPool() {
-  const ranges = [
-    { min: 1, max: 9, target: 1 },
-    { min: 10, max: 19, target: 1 },
-    { min: 20, max: 29, target: 1 },
-    { min: 30, max: 39, target: 1 },
-    { min: 40, max: 45, target: 1 },
-  ];
+function drawRandomNumbers() {
+  const numbers = Array.from({ length: MAX_NUMBER }, (_, index) => index + 1);
 
-  const selected = new Set();
-
-  ranges.forEach(({ min, max, target }) => {
-    while (countInRange(selected, min, max) < target) {
-      selected.add(randomInt(min, max));
-    }
-  });
-
-  while (selected.size < PICK_COUNT) {
-    selected.add(randomInt(1, MAX_NUMBER));
+  for (let index = numbers.length - 1; index > 0; index -= 1) {
+    const randomIndex = randomInt(0, index);
+    [numbers[index], numbers[randomIndex]] = [numbers[randomIndex], numbers[index]];
   }
 
-  return [...selected].sort((a, b) => a - b);
-}
-
-function countInRange(numbers, min, max) {
-  let count = 0;
-  numbers.forEach((number) => {
-    if (number >= min && number <= max) count += 1;
-  });
-  return count;
+  return numbers.slice(0, PICK_COUNT);
 }
 
 function randomInt(min, max) {
@@ -77,7 +56,7 @@ function randomInt(min, max) {
 }
 
 function startNewGame() {
-  state.currentNumbers = weightedNumberPool();
+  state.currentNumbers = drawRandomNumbers();
   state.revealedCount = 0;
   drawButton.textContent = DRAW_BUTTON_TEXT;
   updateStatus();
